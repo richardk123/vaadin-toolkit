@@ -1,9 +1,10 @@
 package com.vaadin.toolkit.form;
 
+import com.vaadin.data.HasValue;
 import com.vaadin.toolkit.common.BindUtils;
 import com.vaadin.toolkit.common.FormRenderer;
 import com.vaadin.data.Binder;
-import com.vaadin.data.ValidationException;
+import com.vaadin.toolkit.common.TBinder;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
@@ -25,16 +26,9 @@ public class Form<T> extends CustomComponent
 	public Form(final FormHandler<T> handler)
 	{
 		this.handler = handler;
-	}
 
-	@Override
-	public void attach()
-	{
-		super.attach();
-		bindUtils.register(this, handler.getBean(), this::createLayout);
+		bindUtils.register(this, handler.getBinder(), (binder) -> render());
 		bindUtils.register(this, handler.getBinder(), this::binderChange);
-
-		createLayout(handler.getBean().getValue());
 	}
 
 	public Form<T> withFormRenderer(FormRenderer<T> formRenderer)
@@ -43,19 +37,12 @@ public class Form<T> extends CustomComponent
 		return this;
 	}
 
-	private void binderChange(Binder<T> binder)
+	private void binderChange(TBinder<T> binder)
 	{
 		if (formRenderer != null)
 		{
 			binder.bindInstanceFields(formRenderer);
-			try
-			{
-				binder.writeBean(handler.getBean().getValue());
-			}
-			catch (ValidationException e)
-			{
-				throw new RuntimeException(e);
-			}
+			binder.readBean(handler.getBean().getValue());
 		}
 	}
 
@@ -64,11 +51,11 @@ public class Form<T> extends CustomComponent
 		handler.getBean().setValue(bean);
 	}
 
-	protected void createLayout(T bean)
+	protected void render()
 	{
-		// global form layout
+		T bean = handler.getBean().getValue();
+
 		final VerticalLayout layout = new VerticalLayout();
-		layout.addStyleName("form-view");
 		layout.setHeight(100, Unit.PERCENTAGE);
 		layout.setSpacing(true);
 

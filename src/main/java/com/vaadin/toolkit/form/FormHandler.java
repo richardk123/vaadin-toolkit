@@ -3,6 +3,7 @@ package com.vaadin.toolkit.form;
 import java.util.function.Consumer;
 
 import com.vaadin.toolkit.common.Property;
+import com.vaadin.toolkit.common.TBinder;
 import com.vaadin.toolkit.common.UIProperty;
 import com.vaadin.data.Binder;
 
@@ -13,7 +14,7 @@ public class FormHandler<T>
 {
 	private final Class<T> beanType;
 	private final Property<T> bean = new Property<>();
-	private final Property<Binder<T>> binder = new Property<>();
+	private final Property<TBinder<T>> binder = new Property<>();
 
 	private final UIProperty saveButton = new UIProperty(true, true, "Save");
 	private final UIProperty cancelButton = new UIProperty(true, true, "Cancel");
@@ -27,9 +28,9 @@ public class FormHandler<T>
 		this.bean.addValueChangeListener(this::createBinder);
 	}
 
-	private Binder<T> createBinder(T bean)
+	private void createBinder(T bean)
 	{
-		return new Binder<T>(beanType);
+		binder.setValue(new TBinder<>(beanType));
 	}
 
 	protected Property<T> getBean()
@@ -37,7 +38,7 @@ public class FormHandler<T>
 		return bean;
 	}
 
-	protected Property<Binder<T>> getBinder()
+	protected Property<TBinder<T>> getBinder()
 	{
 		return binder;
 	}
@@ -54,6 +55,7 @@ public class FormHandler<T>
 	{
 		if (save != null)
 		{
+			binder.getValue().writeBeanIfValid(getBean().getValue());
 			save.accept(bean.getValue());
 		}
 	}
