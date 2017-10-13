@@ -1,13 +1,13 @@
 package com.vaadin.toolkit.common;
 
-import com.vaadin.ui.Component;
-
 import javax.annotation.Nonnull;
+
+import com.vaadin.ui.Component;
 
 /**
  * @author Kolisek
  */
-public interface FormRenderer<T>
+public interface BeanRenderer<T>
 {
 
 	Component render(@Nonnull T bean);

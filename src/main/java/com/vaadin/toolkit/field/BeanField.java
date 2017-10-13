@@ -1,30 +1,31 @@
 package com.vaadin.toolkit.field;
 
-import com.vaadin.data.Binder;
-import com.vaadin.shared.Registration;
-import com.vaadin.toolkit.common.FormRenderer;
-import com.vaadin.toolkit.common.TBinder;
-import com.vaadin.ui.*;
-
 import javax.annotation.Nonnull;
 import java.util.function.Supplier;
+
+import com.vaadin.shared.Registration;
+import com.vaadin.toolkit.common.BeanRenderer;
+import com.vaadin.toolkit.common.RxBinder;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomField;
+import com.vaadin.ui.FormLayout;
 
 /**
  * @author Kolisek
  */
 public class BeanField<T> extends CustomField<T>
 {
-    private final Supplier<FormRenderer> rendererSupplier;
-    private final TBinder<T> binder;
+    private final Supplier<BeanRenderer<T>> rendererSupplier;
+    private final RxBinder<T> binder;
     private T bean;
     protected FormLayout layout = new FormLayout();
     private final Registration renderRegistration;
 
 
-    public BeanField(@Nonnull Class<T> beanClass, @Nonnull Supplier<FormRenderer> rendererSupplier)
+    public BeanField(@Nonnull Class<T> beanClass, @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
     {
         this.rendererSupplier = rendererSupplier;
-        this.binder = new TBinder<>(beanClass);
+        this.binder = new RxBinder<>(beanClass);
         this.renderRegistration = this.addValueChangeListener(l -> render());
     }
 
@@ -32,7 +33,7 @@ public class BeanField<T> extends CustomField<T>
     {
         layout.removeAllComponents();
 
-        FormRenderer<T> formRenderer = rendererSupplier.get();
+        BeanRenderer<T> formRenderer = rendererSupplier.get();
 
         if (bean != null && formRenderer != null)
         {

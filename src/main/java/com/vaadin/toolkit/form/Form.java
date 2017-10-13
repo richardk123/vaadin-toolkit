@@ -1,10 +1,8 @@
 package com.vaadin.toolkit.form;
 
-import com.vaadin.data.HasValue;
+import com.vaadin.toolkit.common.BeanRenderer;
 import com.vaadin.toolkit.common.BindUtils;
-import com.vaadin.toolkit.common.FormRenderer;
-import com.vaadin.data.Binder;
-import com.vaadin.toolkit.common.TBinder;
+import com.vaadin.toolkit.common.RxBinder;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
@@ -18,43 +16,51 @@ import com.vaadin.ui.themes.ValoTheme;
  */
 public class Form<T> extends CustomComponent
 {
-
 	private final FormHandler<T> handler;
-	private FormRenderer<T> formRenderer;
-	private final BindUtils bindUtils = new BindUtils();
+	private RxBinder<T> binder;
+	private BeanRenderer<T> formRenderer;
+	private final Class<T> beanClass;
 
-	public Form(final FormHandler<T> handler)
+	public Form(final FormHandler<T> handler, Class<T> beanClass)
 	{
 		this.handler = handler;
 
-		bindUtils.register(this, handler.getBinder(), (binder) -> render());
-		bindUtils.register(this, handler.getBinder(), this::binderChange);
+		this.beanClass = beanClass;
 	}
 
-	public Form<T> withFormRenderer(FormRenderer<T> formRenderer)
+	public Form<T> withFormRenderer(BeanRenderer<T> formRenderer)
 	{
 		this.formRenderer = formRenderer;
 		return this;
 	}
 
-	private void binderChange(TBinder<T> binder)
+	private void createBinder(T bean)
 	{
+		this.binder = new RxBinder<>(beanClass);
+
 		if (formRenderer != null)
 		{
 			binder.bindInstanceFields(formRenderer);
-			binder.readBean(handler.getBean().getValue());
+			binder.setBean(bean);
 		}
 	}
 
 	public void setBean(T bean)
 	{
-		handler.getBean().setValue(bean);
+		render(bean);
+		createBinder(bean);
+
+		handler.setBindingProvider(binder.get());
+
+		BindUtils.subscribe(this, handler.getBean().getValue(), b ->
+		{
+			render(b);
+			createBinder(b);
+		});
 	}
 
-	protected void render()
+	protected void render(T bean)
 	{
-		T bean = handler.getBean().getValue();
-
 		final VerticalLayout layout = new VerticalLayout();
 		layout.setHeight(100, Unit.PERCENTAGE);
 		layout.setSpacing(true);
@@ -94,22 +100,22 @@ public class Form<T> extends CustomComponent
 
 	protected void addSaveButton(HorizontalLayout layout)
 	{
-		Button button = new Button(handler.getSaveButton().getCaption().getValue());
-		button.setEnabled(handler.getSaveButton().getEnabled().getValue());
-		button.setVisible(handler.getSaveButton().getVisible().getValue());
-		button.addClickListener(e -> handler.saveBean());
+		Button button = new Button();
+		BindUtils.subscribe(button, handler.getSaveBtnState());
+		button.addClickListener(e -> handler.saveBean(binder.getBean()));
 		layout.addComponent(button);
-		bindUtils.register(button, handler.getSaveButton());
 	}
 
 	protected void addCancelButton(HorizontalLayout layout)
 	{
-		Button button = new Button(handler.getCancelButton().getCaption().getValue());
-		button.setEnabled(handler.getCancelButton().getEnabled().getValue());
-		button.setVisible(handler.getCancelButton().getVisible().getValue());
+		Button button = new Button();
+		BindUtils.subscribe(button, handler.getCancelBtnState());
 		button.addClickListener(e -> handler.cancelBean());
 		layout.addComponent(button);
-		bindUtils.register(button, handler.getCancelButton());
 	}
 
+	public RxBinder<T> getBinder()
+	{
+		return binder;
+	}
 }

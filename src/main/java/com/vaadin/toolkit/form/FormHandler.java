@@ -2,46 +2,21 @@ package com.vaadin.toolkit.form;
 
 import java.util.function.Consumer;
 
-import com.vaadin.toolkit.common.Property;
-import com.vaadin.toolkit.common.TBinder;
-import com.vaadin.toolkit.common.UIProperty;
-import com.vaadin.data.Binder;
+import com.vaadin.toolkit.common.BindingProvider;
+import com.vaadin.toolkit.common.ComponentProperty;
 
 /**
  * @author Kolisek
  */
 public class FormHandler<T>
 {
-	private final Class<T> beanType;
-	private final Property<T> bean = new Property<>();
-	private final Property<TBinder<T>> binder = new Property<>();
-
-	private final UIProperty saveButton = new UIProperty(true, true, "Save");
-	private final UIProperty cancelButton = new UIProperty(true, true, "Cancel");
+	private BindingProvider<T> bean;
 
 	private Consumer<T> save;
 	private Runnable cancel;
 
-	public FormHandler(Class<T> beanType)
-	{
-		this.beanType = beanType;
-		this.bean.addValueChangeListener(this::createBinder);
-	}
-
-	private void createBinder(T bean)
-	{
-		binder.setValue(new TBinder<>(beanType));
-	}
-
-	protected Property<T> getBean()
-	{
-		return bean;
-	}
-
-	protected Property<TBinder<T>> getBinder()
-	{
-		return binder;
-	}
+	private final ComponentProperty saveBtnState = new ComponentProperty(true, true, "Save");
+	private final ComponentProperty cancelBtnState = new ComponentProperty(true, true, "Save");
 
 	protected void cancelBean()
 	{
@@ -51,12 +26,16 @@ public class FormHandler<T>
 		}
 	}
 
-	protected void saveBean()
+	protected void setBindingProvider(final BindingProvider<T> bean)
+	{
+		this.bean = bean;
+	}
+
+	protected void saveBean(T bean)
 	{
 		if (save != null)
 		{
-			binder.getValue().writeBeanIfValid(getBean().getValue());
-			save.accept(bean.getValue());
+			save.accept(bean);
 		}
 	}
 
@@ -72,13 +51,18 @@ public class FormHandler<T>
 		return this;
 	}
 
-	public UIProperty getSaveButton()
+	public BindingProvider<T> getBean()
 	{
-		return saveButton;
+		return bean;
 	}
 
-	public UIProperty getCancelButton()
+	protected ComponentProperty getSaveBtnState()
 	{
-		return cancelButton;
+		return saveBtnState;
+	}
+
+	protected ComponentProperty getCancelBtnState()
+	{
+		return cancelBtnState;
 	}
 }

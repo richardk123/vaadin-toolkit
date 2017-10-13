@@ -1,58 +1,43 @@
 package com.vaadin.toolkit.common;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+import javax.annotation.Nonnull;
 
 import com.vaadin.ui.Component;
+import rx.Observable;
+import rx.Subscription;
+import rx.functions.Action1;
 
 /**
  * @author Kolisek
  */
 public class BindUtils
 {
-	private Map<Property, Consumer> register = new HashMap<>();
 
-	public <T> void register(Component component,
-							 Property<T> property,
-							 Consumer<T> listener)
+	public static <T> void subscribe(@Nonnull final Component component,
+								 	 @Nonnull final Observable<T> observable,
+									 @Nonnull final Action1<T> onNext)
 	{
-		register.put(property, listener);
-
-		property.addValueChangeListener(listener);
-
-		component.addDetachListener(l ->
-		{
-			unregisterAll();
-		});
-	}
-
-	private void unregisterAll()
-	{
-		register.forEach((property, listener) ->
-		{
-			property.removeValueChangeListener(listener);
-		});
-
-		register.clear();
-	}
-
-	public void register(Component component,
-						 UIProperty uiProperty)
-	{
-		final Consumer<String> captionListener = component::setCaption;
-		final Consumer<Boolean> enabledListener = component::setEnabled;
-		final Consumer<Boolean> visibleListener = component::setVisible;
-
-		uiProperty.getCaption().addValueChangeListener(captionListener);
-		uiProperty.getEnabled().addValueChangeListener(enabledListener);
-		uiProperty.getVisible().addValueChangeListener(visibleListener);
+		Subscription subscription = observable.subscribe(onNext);
 
 		component.addDetachListener(e ->
 		{
-			uiProperty.getCaption().removeValueChangeListener(captionListener);
-			uiProperty.getEnabled().removeValueChangeListener(enabledListener);
-			uiProperty.getVisible().removeValueChangeListener(visibleListener);
+			subscription.unsubscribe();
+		});
+	}
+
+	public static void subscribe(@Nonnull final Component component,
+								 @Nonnull final RxComponent uiProperty)
+	{
+
+		final Subscription captionSubscription = uiProperty.getCaption().subscribe(component::setCaption);
+		final Subscription enabledSubscription = uiProperty.getEnabled().subscribe(component::setEnabled);
+		final Subscription visibleSubscription = uiProperty.getVisible().subscribe(component::setVisible);
+
+		component.addDetachListener(e ->
+		{
+			captionSubscription.unsubscribe();
+			enabledSubscription.unsubscribe();
+			visibleSubscription.unsubscribe();
 		});
 
 	}

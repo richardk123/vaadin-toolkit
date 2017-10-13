@@ -1,14 +1,14 @@
 package com.vaadin.toolkit.field;
 
-import com.vaadin.shared.Registration;
-import com.vaadin.toolkit.common.FormRenderer;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.CustomField;
-import com.vaadin.ui.VerticalLayout;
-
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.function.Supplier;
+
+import com.vaadin.shared.Registration;
+import com.vaadin.toolkit.common.BeanRenderer;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomField;
+import com.vaadin.ui.VerticalLayout;
 
 /**
  * @author Kolisek
@@ -16,17 +16,17 @@ import java.util.function.Supplier;
 public class BeanCollectionField<T> extends CustomField<Collection<T>>
 {
 
-    private final Class<T> beanClass;
-    private final Supplier<FormRenderer> rendererSupplier;
+    private final Supplier<BeanRenderer<T>> rendererSupplier;
 
     private Collection<T> collection;
     protected VerticalLayout layout = new VerticalLayout();
     private final Registration changeRegistration;
+    private final Class<T> beanClass;
 
-    public BeanCollectionField(@Nonnull Class<T> beanClass, @Nonnull Supplier<FormRenderer> rendererSupplier)
+    public BeanCollectionField(@Nonnull Supplier<BeanRenderer<T>> rendererSupplier, Class<T> beanClass)
     {
-        this.beanClass = beanClass;
         this.rendererSupplier = rendererSupplier;
+        this.beanClass = beanClass;
 
         changeRegistration = this.addValueChangeListener(l -> render());
     }
