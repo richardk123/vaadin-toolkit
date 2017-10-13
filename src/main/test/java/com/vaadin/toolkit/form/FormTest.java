@@ -20,7 +20,7 @@ public class FormTest
 
         form.setBean(new TestData("default"));
 
-        Assert.assertEquals("default", formHandler.getBean().get("name").getValueReal());
+        Assert.assertEquals("default", formHandler.getBean().get("name").getValue());
     }
 
     @Test
@@ -38,7 +38,7 @@ public class FormTest
                 .findFirst()
                 .ifPresent(f -> ((HasValue)f).setValue("test"));
 
-        Assert.assertEquals("test", formHandler.getBean().get("name").getValueReal());
+        Assert.assertEquals("test", formHandler.getBean().get("name").getValue());
     }
 
     @Test
@@ -64,12 +64,12 @@ public class FormTest
     {
         RxField<String> fieldProperty = new FieldProperty<>(true, true, "lul", "lul");
 
-        Assert.assertNull(fieldProperty.getValueReal());
+        Assert.assertNull(fieldProperty.getValue());
 
-        fieldProperty.getValue().subscribe(val -> System.out.println(" val: " + val));
+        fieldProperty.getObservable().subscribe(val -> System.out.println(" val: " + val));
 
         fieldProperty.setValue("xxx");
 
-        Assert.assertEquals("xxx", fieldProperty.getValueReal());
+        Assert.assertEquals("xxx", fieldProperty.getValue());
     }
 }

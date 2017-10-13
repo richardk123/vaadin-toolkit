@@ -20,10 +20,18 @@ public class RxBinder<T> extends Binder<T>
 {
 
     private List<BindingProvider> bindingProviders = new ArrayList<>();
+
     private BindingFieldProvider<T> bindingFieldProvider = new BindingFieldProvider<T>(true, true, null, null)
     {
         @Override
-        public BindingProvider<?> get(@Nonnull String property)
+        @Nonnull
+        public List<BindingProvider> getAll()
+        {
+            return bindingProviders;
+        }
+
+        @Override
+        public BindingProvider get(@Nonnull String property)
         {
             return getBindingProviderForProperty(property);
         }
@@ -53,7 +61,7 @@ public class RxBinder<T> extends Binder<T>
 
                     bindingProviders.add(bindingProvider);
 
-                    bindingProvider.getValue().subscribe((Action1) o ->
+                    bindingProvider.getObservable().subscribe((Action1) o ->
                     {
                         Object value = fieldInstance.getValue();
                         if (o != null && !Objects.equals(value, o))
@@ -73,7 +81,7 @@ public class RxBinder<T> extends Binder<T>
                             {
                                 setVal(bean, property, fieldValue);
 
-                                if (!Objects.equals(fieldValue, bindingProvider.getValueReal()))
+                                if (!Objects.equals(fieldValue, bindingProvider.getValue()))
                                 {
                                     bindingProvider.setValue(fieldValue);
                                 }
@@ -81,10 +89,16 @@ public class RxBinder<T> extends Binder<T>
                 });
     }
 
-    private BindingProvider createBindingProvider(String property, HasValue fieldInstance)
+    private BindingProvider createBindingProvider(final String property, HasValue fieldInstance)
     {
         return new BindingFieldProvider(true, true, "", property)
         {
+            @Override
+            public List<BindingProvider> getAll()
+            {
+                return new ArrayList<>();
+            }
+
             @Override
             public BindingProvider get(@Nonnull String property)
             {
@@ -94,7 +108,7 @@ public class RxBinder<T> extends Binder<T>
                     return bf.getBinder().getBindingProviderForProperty(property);
                 }
 
-                throw new RuntimeException(String.format("unsuported for property: %s", property));
+                throw new RuntimeException(String.format("unsuported for property: %s within: %s", property, this.property));
             }
         };
     }
@@ -166,8 +180,17 @@ public class RxBinder<T> extends Binder<T>
 
     public BindingProvider getBindingProviderForProperty(String property)
     {
-        return bindingProviders.stream()
-                .filter(bindingProvider -> property.equals(bindingProvider.getProperty()))
+        String[] splitted = property.split("\\.");
+
+        BindingProvider result = bindingProviders.stream()
+                .filter(bindingProvider -> splitted[0].equals(bindingProvider.getProperty()))
                 .findFirst().orElseThrow(() -> new RuntimeException(String.format("property %s not found", property)));
+
+        if (splitted.length > 1)
+        {
+            return result.get(property.replaceFirst(splitted[0] + ".", ""));
+        }
+
+        return result;
     }
 }

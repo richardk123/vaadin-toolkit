@@ -9,9 +9,9 @@ public interface RxField<T> extends RxComponent
 {
 	void setValue(T value);
 
-	T getValueReal();
+	<X extends T> T getValue();
 
-	Observable<T> getValue();
+	<X extends T> Observable<X> getObservable();
 
 	String getProperty();
 

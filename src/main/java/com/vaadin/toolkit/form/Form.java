@@ -53,7 +53,7 @@ public class Form<T> extends CustomComponent
 
 		handler.setBindingProvider(binder.get());
 
-		BindUtils.subscribe(this, handler.getBean().getValue(), b ->
+		BindUtils.subscribe(this, handler.getBean().getObservable(), b ->
 		{
 			render(b);
 			createBinder(b);
@@ -69,7 +69,7 @@ public class Form<T> extends CustomComponent
 		layout.setSpacing(true);
 
 		layout.addComponentsAndExpand(formTitle);
-		BindUtils.subscribe(formTitle, handler.getFormTitleState());
+		BindUtils.subscribe(formTitle, handler.getTitleState());
 
 		if (bean != null && formRenderer != null)
 		{

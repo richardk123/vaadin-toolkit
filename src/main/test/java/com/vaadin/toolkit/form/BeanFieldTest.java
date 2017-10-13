@@ -30,7 +30,7 @@ public class BeanFieldTest
 		testData.setTest(new TestData("innerValue"));
 		form.setBean(testData);
 
-		String rxValue = (String) formHandler.getBean().get("test").get("name").getValueReal();
+		String rxValue = (String) formHandler.getBean().get("test").get("name").getValue();
 
 		Assert.assertEquals("innerValue", rxValue);
 	}
@@ -55,7 +55,7 @@ public class BeanFieldTest
 				.findFirst()
 				.ifPresent(f -> ((HasValue) f).setValue("changedValue"));
 
-		String rxValue = (String) formHandler.getBean().get("test").get("name").getValueReal();
+		String rxValue = (String) formHandler.getBean().get("test").get("name").getValue();
 
 		Assert.assertEquals("changedValue", rxValue);
 	}

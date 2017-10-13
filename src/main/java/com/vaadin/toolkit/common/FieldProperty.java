@@ -27,13 +27,13 @@ public class FieldProperty<T> extends ComponentProperty implements RxField<T>
 	}
 
 	@Override
-	public T getValueReal()
+	public T getValue()
 	{
 		return this.val;
 	}
 
 	@Override
-	public Observable<T> getValue()
+	public Observable<T> getObservable()
 	{
 		return value;
 	}

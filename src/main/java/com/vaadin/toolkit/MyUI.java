@@ -10,6 +10,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.toolkit.common.BeanRenderer;
 import com.vaadin.toolkit.common.BindingProvider;
+import com.vaadin.toolkit.common.RxComponent;
 import com.vaadin.toolkit.field.BeanField;
 import com.vaadin.toolkit.form.Form;
 import com.vaadin.toolkit.form.FormHandler;
@@ -43,18 +44,21 @@ public class MyUI extends UI {
         Form<Organization> form = new Form<>(formHandler, Organization.class)
                 .withFormRenderer(new OrganizationRenderer());
 
-        Organization org = new Organization("root");
-        form.setBean(org);
+        form.setBean(new Organization("root"));
 
         BindingProvider<Organization> bean = formHandler.getBean();
-        Observable<String> firstName = (Observable<String>)(Observable<?>) bean.get("owner").get("firstName").getValue();
-        Observable<String> lastName = (Observable<String>)(Observable<?>) bean.get("owner").get("lastName").getValue();
+        Observable<String> firstName = bean.get("owner.firstName").getObservable();
+        Observable<String> lastName = bean.get("owner.lastName").getObservable();
+        RxComponent title = formHandler.getTitleState();
 
-        BindingProvider<String> userName = bean.get("owner").get("userName");
+        BindingProvider<String> userName = bean.get("owner.userName");
 
-        Observable.combineLatest(firstName, lastName, (s1, s2) -> {
-            return s1 + "." + s2;
-        }).subscribe(userName::setValue);
+        Observable.combineLatest(firstName, lastName, (s1, s2) -> s1 + "." + s2)
+                .subscribe(userName::setValue);
+
+        userName.getObservable()
+                .subscribe(value -> title.setCaption("Form of " + value));
+
 
         setContent(form);
     }
