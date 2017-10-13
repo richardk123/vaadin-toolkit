@@ -3,7 +3,6 @@ package com.vaadin.toolkit.field;
 import javax.annotation.Nonnull;
 import java.util.function.Supplier;
 
-import com.vaadin.shared.Registration;
 import com.vaadin.toolkit.common.BeanRenderer;
 import com.vaadin.toolkit.common.RxBinder;
 import com.vaadin.ui.Component;
@@ -16,20 +15,18 @@ import com.vaadin.ui.FormLayout;
 public class BeanField<T> extends CustomField<T>
 {
     private final Supplier<BeanRenderer<T>> rendererSupplier;
-    private final RxBinder<T> binder;
+    private final Class<T> beanClass;
+    private RxBinder<T> binder;
     private T bean;
     protected FormLayout layout = new FormLayout();
-    private final Registration renderRegistration;
-
 
     public BeanField(@Nonnull Class<T> beanClass, @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
     {
+        this.beanClass = beanClass;
         this.rendererSupplier = rendererSupplier;
-        this.binder = new RxBinder<>(beanClass);
-        this.renderRegistration = this.addValueChangeListener(l -> render());
     }
 
-    protected void render()
+    protected void render(T bean)
     {
         layout.removeAllComponents();
 
@@ -38,17 +35,9 @@ public class BeanField<T> extends CustomField<T>
         if (bean != null && formRenderer != null)
         {
             layout.addComponent(formRenderer.render(bean));
-
             binder.bindInstanceFields(formRenderer);
-            binder.readBean(bean);
+            binder.setBean(bean);
         }
-    }
-
-    @Override
-    public void detach()
-    {
-        super.detach();
-        renderRegistration.remove();
     }
 
     @Override
@@ -61,15 +50,18 @@ public class BeanField<T> extends CustomField<T>
     protected void doSetValue(T value)
     {
         this.bean = value;
+        this.binder = new RxBinder<>(beanClass);
+        render(value);
     }
 
     @Override
     public T getValue()
     {
-        if (bean != null)
-        {
-            binder.writeBeanIfValid(bean);
-        }
         return this.bean;
+    }
+
+    public RxBinder<T> getBinder()
+    {
+        return binder;
     }
 }

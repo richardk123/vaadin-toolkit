@@ -11,10 +11,20 @@ import org.junit.Test;
 
 public class FormTest
 {
+    @Test
+    public void testDefaultEntityDataInRxValue()
+    {
+        FormHandler<TestData> formHandler = new FormHandler<>();
+        Form<TestData> form = new Form<>(formHandler, TestData.class)
+                .withFormRenderer(new TestDataRenderer());
 
+        form.setBean(new TestData("default"));
+
+        Assert.assertEquals("default", formHandler.getBean().get("name").getValueReal());
+    }
 
     @Test
-    public void testChangingFieldValueAndExpectingValueInRfField()
+    public void testChangingFieldValueAndExpectingValueInRxField()
     {
         FormHandler<TestData> formHandler = new FormHandler<>();
         Form<TestData> form = new Form<>(formHandler, TestData.class)
@@ -50,7 +60,7 @@ public class FormTest
     }
 
     @Test
-    public void testFieldProperty()
+    public void testRxField()
     {
         RxField<String> fieldProperty = new FieldProperty<>(true, true, "lul", "lul");
 
