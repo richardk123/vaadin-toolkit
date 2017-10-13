@@ -7,6 +7,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.themes.ValoTheme;
@@ -61,9 +62,14 @@ public class Form<T> extends CustomComponent
 
 	protected void render(T bean)
 	{
+		Label formTitle = new Label();
+
 		final VerticalLayout layout = new VerticalLayout();
 		layout.setHeight(100, Unit.PERCENTAGE);
 		layout.setSpacing(true);
+
+		layout.addComponentsAndExpand(formTitle);
+		BindUtils.subscribe(formTitle, handler.getFormTitleState());
 
 		if (bean != null && formRenderer != null)
 		{

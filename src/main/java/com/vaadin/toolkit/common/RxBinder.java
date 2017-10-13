@@ -56,7 +56,7 @@ public class RxBinder<T> extends Binder<T>
                     bindingProvider.getValue().subscribe((Action1) o ->
                     {
                         Object value = fieldInstance.getValue();
-                        if (!Objects.equals(value, o))
+                        if (o != null && !Objects.equals(value, o))
                         {
                             fieldInstance.setValue(o);
                         }

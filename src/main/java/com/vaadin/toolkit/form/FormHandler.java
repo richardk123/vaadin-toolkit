@@ -15,8 +15,9 @@ public class FormHandler<T>
 	private Consumer<T> save;
 	private Runnable cancel;
 
+	private final ComponentProperty formTitleState = new ComponentProperty(true, true, "Form title");
 	private final ComponentProperty saveBtnState = new ComponentProperty(true, true, "Save");
-	private final ComponentProperty cancelBtnState = new ComponentProperty(true, true, "Save");
+	private final ComponentProperty cancelBtnState = new ComponentProperty(true, true, "Cancel");
 
 	protected void cancelBean()
 	{
@@ -64,5 +65,10 @@ public class FormHandler<T>
 	protected ComponentProperty getCancelBtnState()
 	{
 		return cancelBtnState;
+	}
+
+	public ComponentProperty getFormTitleState()
+	{
+		return formTitleState;
 	}
 }
