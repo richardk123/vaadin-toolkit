@@ -31,7 +31,7 @@ public class RxBinder<T> extends Binder<T>
         }
 
         @Override
-        public BindingProvider get(@Nonnull String property)
+        public BindingProvider getBindingProvider(@Nonnull String property)
         {
             return getBindingProviderForProperty(property);
         }
@@ -100,7 +100,7 @@ public class RxBinder<T> extends Binder<T>
             }
 
             @Override
-            public BindingProvider get(@Nonnull String property)
+            public BindingProvider getBindingProvider(@Nonnull String property)
             {
                 if (fieldInstance instanceof BeanField)
                 {
@@ -188,7 +188,7 @@ public class RxBinder<T> extends Binder<T>
 
         if (splitted.length > 1)
         {
-            return result.get(property.replaceFirst(splitted[0] + ".", ""));
+            return result.getBindingProvider(property.replaceFirst(splitted[0] + ".", ""));
         }
 
         return result;

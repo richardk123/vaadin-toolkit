@@ -20,7 +20,7 @@ public class FormTest
 
         form.setBean(new TestData("default"));
 
-        Assert.assertEquals("default", formHandler.getBean().get("name").getValue());
+        Assert.assertEquals("default", formHandler.getBean().getBindingProvider("name").getValue());
     }
 
     @Test
@@ -38,7 +38,7 @@ public class FormTest
                 .findFirst()
                 .ifPresent(f -> ((HasValue)f).setValue("test"));
 
-        Assert.assertEquals("test", formHandler.getBean().get("name").getValue());
+        Assert.assertEquals("test", formHandler.getBean().getBindingProvider("name").getValue());
     }
 
     @Test
@@ -50,7 +50,7 @@ public class FormTest
 
         form.setBean(new TestData("default"));
 
-        formHandler.getBean().get("name").setValue("test");
+        formHandler.getBean().getBindingProvider("name").setValue("test");
 
         String value = (String) form.getBinder().getFields()
                 .filter(f -> f instanceof TextField)

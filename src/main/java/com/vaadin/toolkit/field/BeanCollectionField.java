@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import com.vaadin.shared.Registration;
 import com.vaadin.toolkit.common.BeanRenderer;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomField;
@@ -20,22 +19,13 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
 
     private Collection<T> collection;
     protected VerticalLayout layout = new VerticalLayout();
-    private final Registration changeRegistration;
     private final Class<T> beanClass;
 
-    public BeanCollectionField(@Nonnull Supplier<BeanRenderer<T>> rendererSupplier, Class<T> beanClass)
+    public BeanCollectionField(Class<T> beanClass, @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
     {
         this.rendererSupplier = rendererSupplier;
         this.beanClass = beanClass;
 
-        changeRegistration = this.addValueChangeListener(l -> render());
-    }
-
-    @Override
-    public void detach()
-    {
-        super.detach();
-        changeRegistration.remove();
     }
 
     @Override
@@ -60,6 +50,7 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     protected void doSetValue(Collection<T> value)
     {
         this.collection = value;
+        render();
     }
 
     @Override

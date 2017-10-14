@@ -3,6 +3,7 @@ package com.vaadin.toolkit.common;
 import javax.annotation.Nonnull;
 
 import com.vaadin.annotations.PropertyId;
+import com.vaadin.toolkit.field.BeanCollectionField;
 import com.vaadin.toolkit.field.BeanField;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.FormLayout;
@@ -20,12 +21,16 @@ public class TestDataRenderer implements BeanRenderer<TestData>
 	@PropertyId("test")
 	private BeanField<TestData> testBeanField;
 
+	@PropertyId("testList")
+	private BeanCollectionField<TestData> testDataListField;
+
 	@Override
 	public Component render(@Nonnull TestData bean)
 	{
 		this.nameField = new TextField();
 		this.testBeanField = new BeanField<>(TestData.class, TestDataRenderer::new);
-		return new FormLayout(nameField, testBeanField);
+		this.testDataListField =  new BeanCollectionField<>(TestData.class, TestDataRenderer::new);
+		return new FormLayout(nameField, testBeanField, testDataListField);
 	}
 
 }

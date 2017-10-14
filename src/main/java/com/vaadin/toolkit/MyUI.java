@@ -47,11 +47,11 @@ public class MyUI extends UI {
         form.setBean(new Organization("root"));
 
         BindingProvider<Organization> bean = formHandler.getBean();
-        Observable<String> firstName = bean.get("owner.firstName").getObservable();
-        Observable<String> lastName = bean.get("owner.lastName").getObservable();
+        Observable<String> firstName = bean.getObservable("owner.firstName");
+        Observable<String> lastName = bean.getObservable("owner.lastName");
         RxComponent title = formHandler.getTitleState();
 
-        BindingProvider<String> userName = bean.get("owner.userName");
+        BindingProvider<String> userName = bean.getBindingProvider("owner.userName");
 
         Observable.combineLatest(firstName, lastName, (s1, s2) -> s1 + "." + s2)
                 .subscribe(userName::setValue);
