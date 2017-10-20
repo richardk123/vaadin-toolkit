@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import com.vaadin.toolkit.common.BeanRenderer;
+import com.vaadin.toolkit.form.FormHandler;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomField;
 import com.vaadin.ui.VerticalLayout;
@@ -16,13 +17,17 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
 {
 
     private final Supplier<BeanRenderer<T>> rendererSupplier;
+    private final FormHandler formHandler;
 
     private Collection<T> collection;
     protected VerticalLayout layout = new VerticalLayout();
     private final Class<T> beanClass;
 
-    public BeanCollectionField(Class<T> beanClass, @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
+    public BeanCollectionField(Class<T> beanClass,
+                               @Nonnull FormHandler formHandler,
+                               @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
     {
+        this.formHandler = formHandler;
         this.rendererSupplier = rendererSupplier;
         this.beanClass = beanClass;
 

@@ -1,196 +1,125 @@
 package com.vaadin.toolkit.common;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.vaadin.annotations.PropertyId;
 import com.vaadin.data.Binder;
 import com.vaadin.data.HasValue;
 import com.vaadin.toolkit.field.BeanField;
-import com.vaadin.util.ReflectTools;
-import org.apache.commons.beanutils.PropertyUtils;
-import rx.functions.Action1;
 
 public class RxBinder<T> extends Binder<T>
 {
 
-    private List<BindingProvider> bindingProviders = new ArrayList<>();
-
-    private BindingFieldProvider<T> bindingFieldProvider = new BindingFieldProvider<T>(true, true, null, null)
-    {
-        @Override
-        @Nonnull
-        public List<BindingProvider> getAll()
-        {
-            return bindingProviders;
-        }
-
-        @Override
-        public BindingProvider getBindingProvider(@Nonnull String property)
-        {
-            return getBindingProviderForProperty(property);
-        }
-    };
+    private List<RxField<Object>> rxFields = new ArrayList<>();
 
     public RxBinder(Class<T> beanType)
     {
         super(beanType);
     }
 
-    @Override
-    public void bindInstanceFields(Object objectWithMemberFields)
+    private String getFieldName(Field field)
     {
-        this.bindingProviders = new ArrayList<>();
+        return field.getAnnotationsByType(PropertyId.class)[0].value();
+    }
 
-        Class<?> objectClass = objectWithMemberFields.getClass();
+    public void bindInstanceFields(final Object objectWithMemberFields,
+                                   final Object rxBean)
+    {
+        rxFields = new ArrayList<>();
+        Class<?> formClass = objectWithMemberFields.getClass();
+        Class<?> handlerClass = rxBean.getClass();
 
-        getFieldsInDeclareOrder(objectClass)
+        final Map<String, Field> formFieldMap = ReflectionUtils.getFieldsInDeclareOrder(formClass)
                 .stream()
-                .filter(memberField -> HasValue.class.isAssignableFrom(memberField.getType()))
-                .forEach(field ->
+                .filter(field -> HasValue.class.isAssignableFrom(field.getType()))
+                .filter(field -> field.getAnnotationsByType(PropertyId.class).length > 0)
+                .collect(Collectors.toMap(this::getFieldName, Function.identity(), (oldValue, newValue) -> oldValue));
+
+        final Map<String, Field> handlerFieldMap = ReflectionUtils.getFieldsInDeclareOrder(handlerClass)
+                .stream()
+                .filter(field -> RxField.class.isAssignableFrom(field.getType()))
+                .filter(field -> field.getAnnotationsByType(PropertyId.class).length > 0)
+                .collect(Collectors.toMap(this::getFieldName, Function.identity(), (oldValue, newValue) -> oldValue));
+
+        formFieldMap.forEach(
+                (property, formJavaField) ->
                 {
-                    final HasValue fieldInstance = getFieldValue(field, objectWithMemberFields);
-                    //todo: what if there is not propertyId present
-                    final String property = field.getAnnotationsByType(PropertyId.class)[0].value();
-                    final BindingProvider bindingProvider = createBindingProvider(property, fieldInstance);
+                    Field handlerJavaField = handlerFieldMap.get(property);
 
-                    bindingProviders.add(bindingProvider);
-
-                    bindingProvider.getObservable().subscribe((Action1) o ->
+                    if (handlerJavaField == null)
                     {
-                        Object value = fieldInstance.getValue();
-                        if (o != null && !Objects.equals(value, o))
+                        throw new RuntimeException(String.format("property: %s is missing on handler", property));
+                    }
+
+                    final HasValue<Object> formField = ReflectionUtils.getFieldValue(formJavaField, objectWithMemberFields, HasValue.class);
+                    final RxField<Object> rxField = ReflectionUtils.getFieldValue(handlerJavaField, rxBean, RxField.class);
+
+                    this.rxFields.add(rxField);
+
+                    if (formField == null)
+                    {
+                        throw new RuntimeException(String.format("formField for property %s is null", property));
+                    }
+
+                    if (rxField == null)
+                    {
+                        throw new RuntimeException(String.format("rxField for property %s is null", property));
+                    }
+
+                    // listen to changes on rxFields and set them to the form field
+                    rxField.getObservable().subscribe(newValue ->
+                    {
+                        if (newValue != null)
                         {
-                            fieldInstance.setValue(o);
+                            fillBeanField(formField, rxField);
+                            formField.setValue(newValue);
                         }
                     });
 
-                    bind(fieldInstance,
+                    bind(formField,
                             // getter
-                            (bean) ->
-                            {
-                                return getVal(bean, property);
-                            },
+                            (bean) -> ReflectionUtils.getVal(bean, property),
                             // setter
                             (bean, fieldValue) ->
                             {
-                                setVal(bean, property, fieldValue);
+                                ReflectionUtils.setVal(bean, property, fieldValue);
 
-                                if (!Objects.equals(fieldValue, bindingProvider.getValue()))
+                                if (!Objects.equals(fieldValue, rxField.getValue()))
                                 {
-                                    bindingProvider.setValue(fieldValue);
+                                    rxField.setValue(fieldValue);
                                 }
                             });
-                });
+
+                }
+        );
     }
 
-    private BindingProvider createBindingProvider(final String property, HasValue fieldInstance)
+    private void fillBeanField(HasValue<Object> field, Object rxBean)
     {
-        return new BindingFieldProvider(true, true, "", property)
+        if (field instanceof BeanField)
         {
-            @Override
-            public List<BindingProvider> getAll()
-            {
-                return new ArrayList<>();
-            }
-
-            @Override
-            public BindingProvider getBindingProvider(@Nonnull String property)
-            {
-                if (fieldInstance instanceof BeanField)
-                {
-                    BeanField bf = (BeanField) fieldInstance;
-                    return bf.getBinder().getBindingProviderForProperty(property);
-                }
-
-                throw new RuntimeException(String.format("unsuported for property: %s within: %s", property, this.property));
-            }
-        };
+            ((BeanField) field).setRxBean((RxBean) rxBean);
+        }
     }
 
     @Override
     public void setBean(final T bean)
     {
         // TODO: on first set of value there should not be an event for all subscribers
-        bindingProviders.forEach(bp ->
+        rxFields.forEach(rxField ->
         {
-            String property = bp.getProperty();
-            Object value = getVal(bean, property);
-            bp.setValue(value);
+            String property = rxField.getProperty();
+            Object value = ReflectionUtils.getVal(bean, property);
+            rxField.setValue(value);
         });
 
         super.setBean(bean);
     }
 
-    private Object getVal(Object bean, String property)
-    {
-        try
-        {
-            return PropertyUtils.getProperty(bean, property);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void setVal(Object bean, String property, Object value)
-    {
-        try
-        {
-            PropertyUtils.setProperty(bean, property, value);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private HasValue getFieldValue(Field field, Object objectWithMemberFields)
-    {
-        try {
-            return (HasValue<?>) ReflectTools.getJavaFieldValue(
-                    objectWithMemberFields, field, HasValue.class);
-        } catch (IllegalArgumentException | IllegalAccessException
-                | InvocationTargetException e) {
-            return null;
-        }
-    }
-
-    private List<Field> getFieldsInDeclareOrder(Class<?> searchClass) {
-        ArrayList<Field> memberFieldInOrder = new ArrayList<>();
-
-        while (searchClass != null) {
-            memberFieldInOrder.addAll(Arrays.asList(searchClass.getDeclaredFields()));
-            searchClass = searchClass.getSuperclass();
-        }
-        return memberFieldInOrder;
-    }
-
-    // for this
-    public BindingProvider<T> get()
-    {
-        return bindingFieldProvider;
-    }
-
-    public BindingProvider getBindingProviderForProperty(String property)
-    {
-        String[] splitted = property.split("\\.");
-
-        BindingProvider result = bindingProviders.stream()
-                .filter(bindingProvider -> splitted[0].equals(bindingProvider.getProperty()))
-                .findFirst().orElseThrow(() -> new RuntimeException(String.format("property %s not found", property)));
-
-        if (splitted.length > 1)
-        {
-            return result.getBindingProvider(property.replaceFirst(splitted[0] + ".", ""));
-        }
-
-        return result;
-    }
 }

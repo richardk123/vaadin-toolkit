@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import java.util.function.Supplier;
 
 import com.vaadin.toolkit.common.BeanRenderer;
+import com.vaadin.toolkit.common.RxBean;
 import com.vaadin.toolkit.common.RxBinder;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomField;
@@ -16,11 +17,15 @@ public class BeanField<T> extends CustomField<T>
 {
     private final Supplier<BeanRenderer<T>> rendererSupplier;
     private final Class<T> beanClass;
+
     private RxBinder<T> binder;
     private T bean;
+    private RxBean<T> rxBean;
+
     protected FormLayout layout = new FormLayout();
 
-    public BeanField(@Nonnull Class<T> beanClass, @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
+    public BeanField(@Nonnull Class<T> beanClass,
+                     @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
     {
         this.beanClass = beanClass;
         this.rendererSupplier = rendererSupplier;
@@ -35,7 +40,7 @@ public class BeanField<T> extends CustomField<T>
         if (bean != null && formRenderer != null)
         {
             layout.addComponent(formRenderer.render(bean));
-            binder.bindInstanceFields(formRenderer);
+            binder.bindInstanceFields(formRenderer, getRxBean());
             binder.setBean(bean);
         }
     }
@@ -63,5 +68,15 @@ public class BeanField<T> extends CustomField<T>
     public RxBinder<T> getBinder()
     {
         return binder;
+    }
+
+    public RxBean<T> getRxBean()
+    {
+        return rxBean;
+    }
+
+    public void setRxBean(RxBean<T> rxBean)
+    {
+        this.rxBean = rxBean;
     }
 }

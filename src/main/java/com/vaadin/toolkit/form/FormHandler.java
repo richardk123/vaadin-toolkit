@@ -2,22 +2,19 @@ package com.vaadin.toolkit.form;
 
 import java.util.function.Consumer;
 
-import com.vaadin.toolkit.common.BindingProvider;
-import com.vaadin.toolkit.common.ComponentProperty;
+import com.vaadin.toolkit.common.RxComponent;
 
 /**
  * @author Kolisek
  */
 public class FormHandler<T>
 {
-	private BindingProvider<T> bean;
-
 	private Consumer<T> save;
 	private Runnable cancel;
 
-	private final ComponentProperty titleState = new ComponentProperty(true, true, "Form title");
-	private final ComponentProperty saveBtnState = new ComponentProperty(true, true, "Save");
-	private final ComponentProperty cancelBtnState = new ComponentProperty(true, true, "Cancel");
+	private final RxComponent titleState = new RxComponent(true, true, "Form title");
+	private final RxComponent saveBtnState = new RxComponent(true, true, "Save");
+	private final RxComponent cancelBtnState = new RxComponent(true, true, "Cancel");
 
 	protected void cancelBean()
 	{
@@ -25,11 +22,6 @@ public class FormHandler<T>
 		{
 			cancel.run();
 		}
-	}
-
-	protected void setBindingProvider(final BindingProvider<T> bean)
-	{
-		this.bean = bean;
 	}
 
 	protected void saveBean(T bean)
@@ -52,22 +44,17 @@ public class FormHandler<T>
 		return this;
 	}
 
-	public BindingProvider<T> getBean()
-	{
-		return bean;
-	}
-
-	protected ComponentProperty getSaveBtnState()
+	protected RxComponent getSaveBtnState()
 	{
 		return saveBtnState;
 	}
 
-	protected ComponentProperty getCancelBtnState()
+	protected RxComponent getCancelBtnState()
 	{
 		return cancelBtnState;
 	}
 
-	public ComponentProperty getTitleState()
+	public RxComponent getTitleState()
 	{
 		return titleState;
 	}

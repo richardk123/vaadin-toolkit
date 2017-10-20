@@ -1,21 +1,52 @@
 package com.vaadin.toolkit.common;
 
+
 import rx.Observable;
+import rx.subjects.BehaviorSubject;
 
 /**
  * @author Kolisek
  */
-public interface RxComponent
+public class RxComponent
 {
-	void setVisible(boolean visible);
+	private final BehaviorSubject<Boolean> visible;
+	private final BehaviorSubject<Boolean> enabled;
+	private final BehaviorSubject<String> caption;
 
-	void setEnabled(boolean enabled);
+	public RxComponent(boolean visible, boolean enabled, String caption)
+	{
+		this.visible = BehaviorSubject.create(visible);
+		this.enabled = BehaviorSubject.create(enabled);
+		this.caption = BehaviorSubject.create(caption);
+	}
 
-	void setCaption(String caption);
+	public void setVisible(boolean visible)
+	{
+		this.visible.onNext(visible);
+	}
 
-	Observable<Boolean> getVisible();
+	public void setEnabled(boolean enabled)
+	{
+		this.enabled.onNext(enabled);
+	}
 
-	Observable<Boolean> getEnabled();
+	public void setCaption(String caption)
+	{
+		this.caption.onNext(caption);
+	}
 
-	Observable<String> getCaption();
+	public Observable<Boolean> getVisible()
+	{
+		return visible;
+	}
+
+	public Observable<Boolean> getEnabled()
+	{
+		return enabled;
+	}
+
+	public Observable<String> getCaption()
+	{
+		return caption;
+	}
 }

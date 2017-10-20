@@ -1,18 +1,49 @@
 package com.vaadin.toolkit.common;
 
 import rx.Observable;
+import rx.subjects.PublishSubject;
 
 /**
  * @author Kolisek
  */
-public interface RxField<T> extends RxComponent
+public class RxField<T> extends RxComponent
 {
-	void setValue(T value);
+	protected T val;
+	protected final String property;
+	protected final PublishSubject<T> value;
 
-	<X extends T> T getValue();
+	public RxField(String property)
+	{
+		super(true, true, null);
+		this.property = property;
+		this.value = PublishSubject.create();
+	}
 
-	<X extends T> Observable<X> getObservable();
+	public RxField(boolean visible, boolean enabled, String caption, String property)
+	{
+		super(visible, enabled, caption);
+		this.property = property;
+		this.value = PublishSubject.create();
+	}
 
-	String getProperty();
+	public void setValue(T value)
+	{
+		this.val = value;
+		this.value.onNext(value);
+	}
 
+	public T getValue()
+	{
+		return this.val;
+	}
+
+	public Observable<T> getObservable()
+	{
+		return value;
+	}
+
+	public String getProperty()
+	{
+		return property;
+	}
 }

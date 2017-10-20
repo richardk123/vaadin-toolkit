@@ -15,11 +15,10 @@ import com.vaadin.ui.themes.ValoTheme;
 /**
  * @author Kolisek
  */
-public class Form<T> extends CustomComponent
+public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 {
 	private final FormHandler<T> handler;
 	private RxBinder<T> binder;
-	private BeanRenderer<T> formRenderer;
 	private final Class<T> beanClass;
 
 	public Form(final FormHandler<T> handler, Class<T> beanClass)
@@ -29,38 +28,20 @@ public class Form<T> extends CustomComponent
 		this.beanClass = beanClass;
 	}
 
-	public Form<T> withFormRenderer(BeanRenderer<T> formRenderer)
-	{
-		this.formRenderer = formRenderer;
-		return this;
-	}
-
 	private void createBinder(T bean)
 	{
 		this.binder = new RxBinder<>(beanClass);
-
-		if (formRenderer != null)
-		{
-			binder.bindInstanceFields(formRenderer);
-			binder.setBean(bean);
-		}
+		binder.bindInstanceFields(this, handler);
+		binder.setBean(bean);
 	}
 
 	public void setBean(T bean)
 	{
-		render(bean);
+		renderForm(bean);
 		createBinder(bean);
-
-		handler.setBindingProvider(binder.get());
-
-		BindUtils.subscribe(this, handler.getBean().getObservable(), b ->
-		{
-			render(b);
-			createBinder(b);
-		});
 	}
 
-	protected void render(T bean)
+	protected void renderForm(T bean)
 	{
 		Label formTitle = new Label();
 
@@ -71,7 +52,7 @@ public class Form<T> extends CustomComponent
 		layout.addComponentsAndExpand(formTitle);
 		BindUtils.subscribe(formTitle, handler.getTitleState());
 
-		if (bean != null && formRenderer != null)
+		if (bean != null)
 		{
 			// make content scrollable
 			VerticalLayout innerPanelLayout = new VerticalLayout();
@@ -79,7 +60,7 @@ public class Form<T> extends CustomComponent
 			innerPanelLayout.setWidth(100, Unit.PERCENTAGE);
 			innerPanelLayout.setHeightUndefined();
 
-			Component form = formRenderer.render(bean);
+			Component form = render(bean);
 			innerPanelLayout.addComponent(form);
 
 			// wrap content of form by panel
@@ -123,5 +104,10 @@ public class Form<T> extends CustomComponent
 	public RxBinder<T> getBinder()
 	{
 		return binder;
+	}
+
+	public FormHandler<T> getHandler()
+	{
+		return handler;
 	}
 }
