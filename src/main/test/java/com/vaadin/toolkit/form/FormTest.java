@@ -14,6 +14,9 @@ import org.junit.Test;
 
 public class FormTest
 {
+
+    public static final String NAME = "name";
+
     public class OrgFormHandler extends FormHandler<Organization>
     {
         @PropertyId("name")
@@ -27,7 +30,7 @@ public class FormTest
 
         public OrgForm(FormHandler<Organization> handler)
         {
-            super(handler, Organization.class);
+            super(handler);
         }
 
         @Override
@@ -47,6 +50,15 @@ public class FormTest
         form.setBean(new Organization("default"));
 
         Assert.assertEquals("default", formHandler.name.getValue());
+    }
+
+    @Test
+    public void testNullBean()
+    {
+        OrgFormHandler formHandler = new OrgFormHandler();
+        OrgForm form = new OrgForm(formHandler);
+
+        form.setBean(null);
     }
 
     @Test

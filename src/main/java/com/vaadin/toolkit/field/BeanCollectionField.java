@@ -2,12 +2,14 @@ package com.vaadin.toolkit.field;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.vaadin.toolkit.common.BeanRenderer;
-import com.vaadin.toolkit.form.FormHandler;
+import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomField;
+import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.VerticalLayout;
 
 /**
@@ -17,17 +19,17 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
 {
 
     private final Supplier<BeanRenderer<T>> rendererSupplier;
-    private final FormHandler formHandler;
 
     private Collection<T> collection;
     protected VerticalLayout layout = new VerticalLayout();
     private final Class<T> beanClass;
 
-    public BeanCollectionField(Class<T> beanClass,
-                               @Nonnull FormHandler formHandler,
+    private Supplier<T> addHandler;
+    private Consumer<T> removeHandler;
+
+    public BeanCollectionField(@Nonnull Class<T> beanClass,
                                @Nonnull Supplier<BeanRenderer<T>> rendererSupplier)
     {
-        this.formHandler = formHandler;
         this.rendererSupplier = rendererSupplier;
         this.beanClass = beanClass;
 
@@ -42,13 +44,24 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     protected void render()
     {
         layout.removeAllComponents();
+
         collection.forEach(bean ->
         {
+            HorizontalLayout horizontalLayout = new HorizontalLayout();
+
             BeanField<T> beanField = new BeanField<>(beanClass, rendererSupplier);
             beanField.setValue(bean);
 
-            layout.addComponent(beanField);
+            horizontalLayout.addComponentsAndExpand(beanField);
+
+            Button removeButton = new Button("Remove");
+            removeButton.addClickListener(e -> removeHandler.accept());
+
+            layout.addComponent(horizontalLayout);
         });
+
+        Button addButton = new Button("Add");
+        addButton.addClickListener(e -> addHandler.get());
     }
 
     @Override
@@ -63,5 +76,17 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     {
         //TODO; commit bean fields
         return collection;
+    }
+
+    public BeanCollectionField<T> withAddHandler(@Nonnull Supplier<T> addHandler)
+    {
+        this.addHandler = addHandler;
+        return this;
+    }
+
+    public BeanCollectionField<T> withRemoveHandler(@Nonnull Consumer<T> removeHandler)
+    {
+        this.removeHandler = removeHandler;
+        return this;
     }
 }

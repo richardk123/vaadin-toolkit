@@ -19,20 +19,20 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 {
 	private final FormHandler<T> handler;
 	private RxBinder<T> binder;
-	private final Class<T> beanClass;
 
-	public Form(final FormHandler<T> handler, Class<T> beanClass)
+	public Form(final FormHandler<T> handler)
 	{
 		this.handler = handler;
-
-		this.beanClass = beanClass;
 	}
 
 	private void createBinder(T bean)
 	{
-		this.binder = new RxBinder<>(beanClass);
-		binder.bindInstanceFields(this, handler);
-		binder.setBean(bean);
+		if (bean != null)
+		{
+			this.binder = new RxBinder<>((Class<T>) bean.getClass());
+			binder.bindInstanceFields(this, handler);
+			binder.setBean(bean);
+		}
 	}
 
 	public void setBean(T bean)
@@ -70,9 +70,10 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 
 			layout.addComponent(panel);
 			layout.setExpandRatio(panel, 1.0f);
+
+			createButtons(layout);
 		}
 
-		createButtons(layout);
 		setCompositionRoot(layout);
 	}
 

@@ -5,6 +5,8 @@ import java.util.List;
 
 public class Organization
 {
+    public static final String NAME = "name";
+
     private String name;
     private User owner;
     private List<User> users = new ArrayList<>();
