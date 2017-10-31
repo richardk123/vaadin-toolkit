@@ -17,19 +17,20 @@ public class OrganizationFormHandler extends FormHandler<Organization, Organizat
 		withRxBean(new OrganizationRxBean());
 
 		// title of form
-		getRxBean().name.getObservable().subscribe(
-				val -> getTitleState().setCaption("Title for form: " + val));
+		getRxBean().name.getObservable().subscribe(val -> getTitleState().setValue("Title for form: " + val));
 
 		// username for owner
 		fillUserName(getRxBean().owner);
 
 		// userName for users
-		getRxBean().users.getAddedSubject().subscribe(rx ->
-		{
-			fillUserName((UserRxBean) rx);
-		});
+		getRxBean().users.getAddedSubject().subscribe(rx -> fillUserName((UserRxBean) rx));
 
-		withSave(bean -> System.out.println(bean.getName()));
+		getRxBean().owner.firstName.getObservable().subscribe(getRxBean().owner::setCaption);
+
+		withSave(bean ->
+		{
+			System.out.println(bean.getName());
+		});
 	}
 
 	private void fillUserName(UserRxBean userRxBean)

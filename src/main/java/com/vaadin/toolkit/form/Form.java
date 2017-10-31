@@ -44,7 +44,7 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 
 	protected void renderForm(T bean)
 	{
-		Label formTitle = new Label();
+		Label formTitle = new Label("Form title");
 
 		final VerticalLayout layout = new VerticalLayout();
 		layout.setHeight(100, Unit.PERCENTAGE);
@@ -52,7 +52,7 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 		layout.setMargin(false);
 
 		layout.addComponentsAndExpand(formTitle);
-		BindUtils.subscribe(formTitle, handler.getTitleState());
+		BindUtils.subscribeLabel(formTitle, handler.getTitleState());
 
 		if (bean != null)
 		{
@@ -91,7 +91,7 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 
 	protected void addSaveButton(HorizontalLayout layout)
 	{
-		Button button = new Button();
+		Button button = new Button("Save");
 		BindUtils.subscribe(button, handler.getSaveBtnState());
 		button.addClickListener(e -> handler.saveBean(binder.getBean()));
 		layout.addComponent(button);
@@ -99,7 +99,7 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 
 	protected void addCancelButton(HorizontalLayout layout)
 	{
-		Button button = new Button();
+		Button button = new Button("Cancel");
 		BindUtils.subscribe(button, handler.getCancelBtnState());
 		button.addClickListener(e -> handler.cancelBean());
 		layout.addComponent(button);

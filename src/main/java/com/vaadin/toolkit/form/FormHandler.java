@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.toolkit.common.RxBean;
 import com.vaadin.toolkit.common.RxComponent;
+import com.vaadin.toolkit.common.RxField;
 
 /**
  * @author Kolisek
@@ -13,9 +14,9 @@ public class FormHandler<T, V extends RxBean<T>>
 	private Consumer<T> save;
 	private Runnable cancel;
 
-	private final RxComponent titleState = new RxComponent(true, true, "Form title");
-	private final RxComponent saveBtnState = new RxComponent(true, true, "Save");
-	private final RxComponent cancelBtnState = new RxComponent(true, true, "Cancel");
+	private final RxField<String> titleState = new RxField<>();
+	private final RxComponent saveBtnState = new RxComponent();
+	private final RxComponent cancelBtnState = new RxComponent();
 
 	private V rxBean;
 
@@ -63,7 +64,7 @@ public class FormHandler<T, V extends RxBean<T>>
 		return cancelBtnState;
 	}
 
-	public RxComponent getTitleState()
+	public RxField<String> getTitleState()
 	{
 		return titleState;
 	}

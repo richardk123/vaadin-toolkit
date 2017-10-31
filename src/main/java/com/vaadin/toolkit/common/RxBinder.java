@@ -14,6 +14,7 @@ import com.vaadin.data.Binder;
 import com.vaadin.data.HasValue;
 import com.vaadin.toolkit.field.BeanCollectionField;
 import com.vaadin.toolkit.field.BeanField;
+import com.vaadin.ui.Component;
 
 public class RxBinder<T> extends Binder<T>
 {
@@ -48,24 +49,11 @@ public class RxBinder<T> extends Binder<T>
                     final HasValue<Object> formField = ReflectionUtils.getFieldValue(formJavaField, objectWithMemberFields, HasValue.class);
                     final RxField<Object> rxField = ReflectionUtils.getFieldValue(rxBeanJavaField, rxBean, RxField.class);
 
-                    // listen to changes on rxFields and set them to the form field
-                    if (rxField != null)
-                    {
-                        rxField.getObservable().subscribe(newValue ->
-                        {
-                            if (newValue != null)
-                            {
-                                fillBeanField(formField, rxField);
-                                fillBeanCollectionField(formField, rxField);
-                                formField.setValue(newValue);
-                            }
-                        });
-                    }
+                    bindDefaultComponentState(rxField, formField);
+                    subscribeToChangeAndSetToField(rxField, formField);
 
                     bind(formField,
-                            // getter
                             (bean) -> ReflectionUtils.getVal(bean, property),
-                            // setter
                             (bean, fieldValue) ->
                             {
                                 ReflectionUtils.setVal(bean, property, fieldValue);
@@ -78,6 +66,32 @@ public class RxBinder<T> extends Binder<T>
 
                 }
         );
+    }
+
+    private void subscribeToChangeAndSetToField(RxField<Object> rxField,
+                                                HasValue<Object> formField)
+    {
+        if (rxField != null)
+        {
+            rxField.getObservable().subscribe(newValue ->
+            {
+                if (newValue != null)
+                {
+                    fillBeanField(formField, rxField);
+                    fillBeanCollectionField(formField, rxField);
+                    formField.setValue(newValue);
+                }
+            });
+        }
+    }
+
+    private void bindDefaultComponentState(RxField<Object> rxField, HasValue<Object> formField)
+    {
+        if (rxField != null && formField instanceof Component)
+        {
+            Component component = (Component) formField;
+            BindUtils.subscribe(component, rxField);
+        }
     }
 
     private Map<String, Field> createRxBeanFieldMap(final @Nullable RxBean<T> rxBean)
