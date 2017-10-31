@@ -18,7 +18,6 @@ import com.vaadin.ui.TextField;
 class OrganizationForm extends Form<Organization>
 {
 
-	private MyUI components;
 	@PropertyId("name")
 	private TextField nameField;
 
@@ -28,10 +27,9 @@ class OrganizationForm extends Form<Organization>
 	@PropertyId("users")
 	private BeanCollectionField<User> usersCollection;
 
-	public OrganizationForm(MyUI components, FormHandler<Organization, ? extends RxBean<Organization>> handler)
+	public OrganizationForm(FormHandler<Organization, ? extends RxBean<Organization>> handler)
 	{
 		super(handler);
-		this.components = components;
 	}
 
 	@Override

@@ -21,7 +21,7 @@ public class MyUI extends UI {
     protected void init(VaadinRequest vaadinRequest)
     {
         OrganizationFormHandler handler = new OrganizationFormHandler();
-        OrganizationForm orgForm = new OrganizationForm(this, handler);
+        OrganizationForm orgForm = new OrganizationForm(handler);
         orgForm.setBean(new Organization());
 
         setContent(orgForm);
