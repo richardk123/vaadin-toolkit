@@ -5,9 +5,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.toolkit.form.FormHandler;
 import com.vaadin.ui.UI;
-import rx.Observable;
 
 /**
  * This UI is the application entry point. A UI may either represent a browser window 
@@ -22,38 +20,11 @@ public class MyUI extends UI {
     @Override
     protected void init(VaadinRequest vaadinRequest)
     {
-        FormHandler<Organization,OrganizationRxBean> handler = new FormHandler<>();
-        handler.withRxBean(new OrganizationRxBean());
-
-        OrganizationRxBean rxBean = handler.getRxBean();
-
-        // title of form
-        rxBean.name.getObservable().subscribe(
-                val -> handler.getTitleState().setCaption("Title for form: " + val));
-
-        // username for owner
-        fillUserName(rxBean.owner);
-
-        // userName for users
-        rxBean.users.getAddedSubject().subscribe(rx ->
-        {
-            fillUserName((UserRxBean) rx);
-        });
-
+        OrganizationFormHandler handler = new OrganizationFormHandler();
         OrganizationForm orgForm = new OrganizationForm(this, handler);
         orgForm.setBean(new Organization());
 
-
         setContent(orgForm);
-    }
-
-    private void fillUserName(UserRxBean userRxBean)
-    {
-        Observable.combineLatest(
-                userRxBean.firstName.getObservable(),
-                userRxBean.lastName.getObservable(),
-                (s1, s2) -> s1 + "." + s2)
-                .subscribe(userRxBean.userName::setValue);
     }
 
     @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
