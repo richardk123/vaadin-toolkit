@@ -43,15 +43,15 @@ public class OrganizationFormHandler extends FormHandler<Organization, Organizat
 
 	public class OrganizationRxBean extends RxBean<Organization>
 	{
-		public RxField<String> name = new RxField<>();
-		public UserRxBean owner = new UserRxBean();
-		public RxCollection<User> users = new RxCollection<>(UserRxBean::new);
+		private RxField<String> name = new RxField<>();
+		private UserRxBean owner = new UserRxBean();
+		private RxCollection<User> users = new RxCollection<>(UserRxBean::new);
 	}
 
 	public class UserRxBean extends RxBean<User>
 	{
-		public RxField<String> firstName = new RxField<>();
-		public RxField<String> lastName = new RxField<>();
-		public RxField<String> userName = new RxField<>();
+		private RxField<String> firstName = new RxField<>();
+		private RxField<String> lastName = new RxField<>();
+		private RxField<String> userName = new RxField<>();
 	}
 }
