@@ -23,7 +23,7 @@ public class MyUI extends UI {
     protected void init(VaadinRequest vaadinRequest)
     {
         FormHandler<Organization,OrganizationRxBean> handler = new FormHandler<>();
-        handler.withRxBean(new OrganizationRxBean(this));
+        handler.withRxBean(new OrganizationRxBean());
 
         OrganizationRxBean rxBean = handler.getRxBean();
 
