@@ -41,13 +41,15 @@ public class BeanField<T> extends CustomField<T>
         {
             layout.addComponent(formRenderer.render(bean));
             binder.bindInstanceFields(formRenderer, getRxBean());
-            binder.setBean(bean);
+            binder.setBean(bean, rxBean);
         }
     }
 
     @Override
     protected Component initContent()
     {
+        layout.setSpacing(false);
+        layout.setMargin(false);
         return layout;
     }
 

@@ -23,29 +23,19 @@ import org.junit.Test;
 public class BeanFieldTest
 {
 
-	public class OrgFormHandler extends FormHandler<Organization>
+	public class OrgRxBean extends RxBean<Organization>
 	{
-		@PropertyId("name")
-		public RxField<String> name = new RxField<>("name");
+		public RxField<String> name = new RxField<>();
 
-		@PropertyId("owner")
-		private UserRxBean owner = new UserRxBean("owner");
+		private UserRxBean owner = new UserRxBean();
 
 		public class UserRxBean extends RxBean<User>
 		{
-			@PropertyId("firstName")
-			public RxField<String> firstName = new RxField<>("firstName");
+			public RxField<String> firstName = new RxField<>();
 
-			@PropertyId("lastName")
-			public RxField<String> lastName = new RxField<>("lastName");
+			public RxField<String> lastName = new RxField<>();
 
-			@PropertyId("userName")
-			public RxField<String> userName = new RxField<>("userName");
-
-			public UserRxBean(String property)
-			{
-				super(property);
-			}
+			public RxField<String> userName = new RxField<>();
 		};
 	}
 
@@ -57,7 +47,7 @@ public class BeanFieldTest
 		@PropertyId("owner")
 		private BeanField<User> ownerField;
 
-		public OrgForm(FormHandler<Organization> handler)
+		public OrgForm(FormHandler<Organization, OrgRxBean> handler)
 		{
 			super(handler);
 		}
@@ -106,19 +96,22 @@ public class BeanFieldTest
 	@Test
 	public void testDefaultValueInBeanFieldRxProperty()
 	{
-		OrgFormHandler formHandler = new OrgFormHandler();
+		FormHandler<Organization, OrgRxBean> formHandler = new FormHandler<>();
+		formHandler.withRxBean(new OrgRxBean());
+
 		OrgForm form = new OrgForm(formHandler);
 
 		form.setBean(createOrganization());
 
-		String rxValue = formHandler.owner.firstName.getValue();
+		String rxValue = formHandler.getRxBean().owner.firstName.getValue();
 		Assert.assertEquals("firstName", rxValue);
 	}
 
 	@Test
 	public void testChangeInBeanFieldValuePropagateToRxField()
 	{
-		OrgFormHandler formHandler = new OrgFormHandler();
+		FormHandler<Organization, OrgRxBean> formHandler = new FormHandler<>();
+		formHandler.withRxBean(new OrgRxBean());
 		OrgForm form = new OrgForm(formHandler);
 
 		form.setBean(createOrganization());
@@ -132,7 +125,7 @@ public class BeanFieldTest
 				.findFirst()
 				.ifPresent(f -> ((HasValue) f).setValue("changedValue"));
 
-		String rxValue = formHandler.owner.lastName.getValue();
+		String rxValue = formHandler.getRxBean().owner.lastName.getValue();
 
 		Assert.assertEquals("changedValue", rxValue);
 	}

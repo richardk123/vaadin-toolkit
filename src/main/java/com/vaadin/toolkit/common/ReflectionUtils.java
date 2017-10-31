@@ -1,5 +1,7 @@
 package com.vaadin.toolkit.common;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -40,8 +42,16 @@ public class ReflectionUtils
 		}
 	}
 
-	public static <T> T getFieldValue(Field field, Object objectWithMemberFields, Class<T> fieldClass)
+	@Nullable
+	public static <T> T getFieldValue(@Nullable Field field,
+									  @Nonnull Object objectWithMemberFields,
+									  @Nonnull Class<T> fieldClass)
 	{
+		if (field == null)
+		{
+			return null;
+		}
+
 		try
 		{
 			return (T) ReflectTools.getJavaFieldValue(objectWithMemberFields, field, fieldClass);

@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import com.vaadin.annotations.PropertyId;
 import com.vaadin.toolkit.common.BeanRenderer;
 import com.vaadin.toolkit.common.Organization;
+import com.vaadin.toolkit.common.RxBean;
 import com.vaadin.toolkit.common.RxCollection;
 import com.vaadin.toolkit.common.RxField;
 import com.vaadin.toolkit.common.User;
@@ -20,30 +21,22 @@ import org.junit.Test;
  */
 public class RxCollectionTest
 {
-	public class OrgFormHandler extends FormHandler<Organization>
+	public class OrgRxBean extends RxBean<Organization>
 	{
-		@PropertyId("name")
-		public RxField<String> name = new RxField<>("name");
+		public RxField<String> name = new RxField<>();
 
-		@PropertyId("users")
-		private UserRxCollection users = new UserRxCollection("users");
+		private RxCollection<User> users = new RxCollection<>(UserBean::new);
 
-		public class UserRxCollection extends RxCollection<User>
+		public class UserBean extends RxBean<User>
 		{
-			@PropertyId("firstName")
-			public RxField<String> firstName = new RxField<>("firstName");
 
-			@PropertyId("lastName")
-			public RxField<String> lastName = new RxField<>("lastName");
+			public RxField<String> firstName = new RxField<>();
 
-			@PropertyId("userName")
-			public RxField<String> userName = new RxField<>("userName");
+			public RxField<String> lastName = new RxField<>();
 
-			public UserRxCollection(String property)
-			{
-				super(property);
-			}
-		};
+			public RxField<String> userName = new RxField<>();
+
+		}
 	}
 
 	private class OrgForm extends Form<Organization>
@@ -54,7 +47,7 @@ public class RxCollectionTest
 		@PropertyId("users")
 		private BeanCollectionField<User> usersField;
 
-		public OrgForm(FormHandler<Organization> handler)
+		public OrgForm(FormHandler<Organization, OrgRxBean> handler)
 		{
 			super(handler);
 		}
@@ -93,7 +86,8 @@ public class RxCollectionTest
 	@Test
 	public void testCollectionDefaultValues()
 	{
-		OrgFormHandler handler = new OrgFormHandler();
+		FormHandler<Organization, OrgRxBean> handler = new FormHandler<>();
+		handler.withRxBean(new OrgRxBean());
 		OrgForm orgForm = new OrgForm(handler);
 
 		Organization organization = new Organization("test");
@@ -101,7 +95,6 @@ public class RxCollectionTest
 
 		orgForm.setBean(organization);
 
-		handler.users.
 	}
 
 }

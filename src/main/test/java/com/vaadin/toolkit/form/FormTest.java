@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import com.vaadin.annotations.PropertyId;
 import com.vaadin.data.HasValue;
+import com.vaadin.toolkit.common.RxBean;
 import com.vaadin.toolkit.common.RxField;
 import com.vaadin.toolkit.common.Organization;
 import com.vaadin.ui.Component;
@@ -15,12 +16,9 @@ import org.junit.Test;
 public class FormTest
 {
 
-    public static final String NAME = "name";
-
-    public class OrgFormHandler extends FormHandler<Organization>
+    public class OrgRxBean extends RxBean<Organization>
     {
-        @PropertyId("name")
-        public RxField<String> name = new RxField<>("name");
+        public RxField<String> name = new RxField<>();
     }
 
     private class OrgForm extends Form<Organization>
@@ -28,7 +26,7 @@ public class FormTest
         @PropertyId("name")
         private TextField nameField;
 
-        public OrgForm(FormHandler<Organization> handler)
+        public OrgForm(FormHandler<Organization, OrgRxBean> handler)
         {
             super(handler);
         }
@@ -44,18 +42,21 @@ public class FormTest
     @Test
     public void testDefaultEntityDataInRxValue()
     {
-        OrgFormHandler formHandler = new OrgFormHandler();
-        OrgForm form = new OrgForm(formHandler);
+        FormHandler<Organization, OrgRxBean> formHandler = new FormHandler<>();
+        formHandler.withRxBean(new OrgRxBean());
 
+        OrgForm form = new OrgForm(formHandler);
         form.setBean(new Organization("default"));
 
-        Assert.assertEquals("default", formHandler.name.getValue());
+        Assert.assertEquals("default", formHandler.getRxBean().name.getValue());
     }
 
     @Test
     public void testNullBean()
     {
-        OrgFormHandler formHandler = new OrgFormHandler();
+        FormHandler<Organization, OrgRxBean> formHandler = new FormHandler<>();
+        formHandler.withRxBean(new OrgRxBean());
+
         OrgForm form = new OrgForm(formHandler);
 
         form.setBean(null);
@@ -64,7 +65,9 @@ public class FormTest
     @Test
     public void testChangingFieldValueAndExpectingValueInRxField()
     {
-        OrgFormHandler formHandler = new OrgFormHandler();
+        FormHandler<Organization, OrgRxBean> formHandler = new FormHandler<>();
+        formHandler.withRxBean(new OrgRxBean());
+
         OrgForm form = new OrgForm(formHandler);
 
         form.setBean(new Organization("default"));
@@ -75,18 +78,20 @@ public class FormTest
                 .findFirst()
                 .ifPresent(f -> ((HasValue)f).setValue("test"));
 
-        Assert.assertEquals("test", formHandler.name.getValue());
+        Assert.assertEquals("test", formHandler.getRxBean().name.getValue());
     }
 
     @Test
     public void testChangingRxValueAndExpectingValueInField()
     {
-        OrgFormHandler formHandler = new OrgFormHandler();
+        FormHandler<Organization, OrgRxBean> formHandler = new FormHandler<>();
+        formHandler.withRxBean(new OrgRxBean());
+
         OrgForm form = new OrgForm(formHandler);
 
         form.setBean(new Organization("default"));
 
-        formHandler.name.setValue("test");
+        formHandler.getRxBean().name.setValue("test");
 
         String value = (String) form.getBinder().getFields()
                 .filter(f -> f instanceof TextField)
@@ -98,7 +103,7 @@ public class FormTest
     @Test
     public void testRxField()
     {
-        RxField<String> fieldProperty = new RxField<>(true, true, "lul", "lul");
+        RxField<String> fieldProperty = new RxField<>();
 
         Assert.assertNull(fieldProperty.getValue());
 

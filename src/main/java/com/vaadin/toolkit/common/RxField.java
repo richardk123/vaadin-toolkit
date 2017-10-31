@@ -9,20 +9,10 @@ import rx.subjects.PublishSubject;
 public class RxField<T> extends RxComponent
 {
 	protected T val;
-	protected final String property;
 	protected final PublishSubject<T> value;
 
-	public RxField(String property)
+	public RxField()
 	{
-		super(true, true, null);
-		this.property = property;
-		this.value = PublishSubject.create();
-	}
-
-	public RxField(boolean visible, boolean enabled, String caption, String property)
-	{
-		super(visible, enabled, caption);
-		this.property = property;
 		this.value = PublishSubject.create();
 	}
 
@@ -42,8 +32,4 @@ public class RxField<T> extends RxComponent
 		return value;
 	}
 
-	public String getProperty()
-	{
-		return property;
-	}
 }

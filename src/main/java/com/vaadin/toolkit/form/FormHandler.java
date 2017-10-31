@@ -2,12 +2,13 @@ package com.vaadin.toolkit.form;
 
 import java.util.function.Consumer;
 
+import com.vaadin.toolkit.common.RxBean;
 import com.vaadin.toolkit.common.RxComponent;
 
 /**
  * @author Kolisek
  */
-public class FormHandler<T>
+public class FormHandler<T, V extends RxBean<T>>
 {
 	private Consumer<T> save;
 	private Runnable cancel;
@@ -15,6 +16,8 @@ public class FormHandler<T>
 	private final RxComponent titleState = new RxComponent(true, true, "Form title");
 	private final RxComponent saveBtnState = new RxComponent(true, true, "Save");
 	private final RxComponent cancelBtnState = new RxComponent(true, true, "Cancel");
+
+	private V rxBean;
 
 	protected void cancelBean()
 	{
@@ -32,13 +35,19 @@ public class FormHandler<T>
 		}
 	}
 
-	public FormHandler<T> withSave(Consumer<T> save)
+	public FormHandler<T, V> withRxBean(V rxBean)
+	{
+		this.rxBean = rxBean;
+		return this;
+	}
+
+	public FormHandler<T, V> withSave(Consumer<T> save)
 	{
 		this.save = save;
 		return this;
 	}
 
-	public FormHandler<T> withCancel(Runnable cancel)
+	public FormHandler<T, V> withCancel(Runnable cancel)
 	{
 		this.cancel = cancel;
 		return this;
@@ -57,5 +66,10 @@ public class FormHandler<T>
 	public RxComponent getTitleState()
 	{
 		return titleState;
+	}
+
+	public V getRxBean()
+	{
+		return rxBean;
 	}
 }

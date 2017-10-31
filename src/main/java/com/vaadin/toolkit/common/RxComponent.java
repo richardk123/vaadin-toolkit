@@ -13,6 +13,13 @@ public class RxComponent
 	private final BehaviorSubject<Boolean> enabled;
 	private final BehaviorSubject<String> caption;
 
+	public RxComponent()
+	{
+		this.visible = BehaviorSubject.create(true);
+		this.enabled = BehaviorSubject.create(true);
+		this.caption = BehaviorSubject.create((String) null);
+	}
+
 	public RxComponent(boolean visible, boolean enabled, String caption)
 	{
 		this.visible = BehaviorSubject.create(visible);

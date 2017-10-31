@@ -2,6 +2,7 @@ package com.vaadin.toolkit.form;
 
 import com.vaadin.toolkit.common.BeanRenderer;
 import com.vaadin.toolkit.common.BindUtils;
+import com.vaadin.toolkit.common.RxBean;
 import com.vaadin.toolkit.common.RxBinder;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
@@ -17,10 +18,10 @@ import com.vaadin.ui.themes.ValoTheme;
  */
 public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 {
-	private final FormHandler<T> handler;
+	private final FormHandler<T, ? extends RxBean<T>> handler;
 	private RxBinder<T> binder;
 
-	public Form(final FormHandler<T> handler)
+	public Form(final FormHandler<T, ? extends RxBean<T>> handler)
 	{
 		this.handler = handler;
 	}
@@ -30,8 +31,8 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 		if (bean != null)
 		{
 			this.binder = new RxBinder<>((Class<T>) bean.getClass());
-			binder.bindInstanceFields(this, handler);
-			binder.setBean(bean);
+			binder.bindInstanceFields(this, handler.getRxBean());
+			binder.setBean(bean, getHandler().getRxBean());
 		}
 	}
 
@@ -47,7 +48,8 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 
 		final VerticalLayout layout = new VerticalLayout();
 		layout.setHeight(100, Unit.PERCENTAGE);
-		layout.setSpacing(true);
+		layout.setSpacing(false);
+		layout.setMargin(false);
 
 		layout.addComponentsAndExpand(formTitle);
 		BindUtils.subscribe(formTitle, handler.getTitleState());
@@ -56,6 +58,7 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 		{
 			// make content scrollable
 			VerticalLayout innerPanelLayout = new VerticalLayout();
+			innerPanelLayout.setMargin(false);
 			innerPanelLayout.setSpacing(true);
 			innerPanelLayout.setWidth(100, Unit.PERCENTAGE);
 			innerPanelLayout.setHeightUndefined();
@@ -107,7 +110,7 @@ public abstract class Form<T> extends CustomComponent implements BeanRenderer<T>
 		return binder;
 	}
 
-	public FormHandler<T> getHandler()
+	public FormHandler<T, ? extends RxBean<T>> getHandler()
 	{
 		return handler;
 	}

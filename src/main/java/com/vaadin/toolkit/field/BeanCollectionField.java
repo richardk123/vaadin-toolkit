@@ -6,6 +6,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import com.vaadin.toolkit.common.BeanRenderer;
+import com.vaadin.toolkit.common.RxCollection;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CustomField;
@@ -24,6 +26,8 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     protected VerticalLayout layout = new VerticalLayout();
     private final Class<T> beanClass;
 
+    private RxCollection<T> rxCollection;
+
     private Supplier<T> addHandler;
     private Consumer<T> removeHandler;
 
@@ -38,6 +42,9 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     @Override
     protected Component initContent()
     {
+        layout.setSpacing(false);
+        layout.setMargin(false);
+        layout.setSizeUndefined();
         return layout;
     }
 
@@ -45,23 +52,63 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     {
         layout.removeAllComponents();
 
-        collection.forEach(bean ->
+        Button addButton = new Button("Add");
+        addButton.addClickListener(e ->
         {
-            HorizontalLayout horizontalLayout = new HorizontalLayout();
+            T bean = addHandler.get();
 
-            BeanField<T> beanField = new BeanField<>(beanClass, rendererSupplier);
-            beanField.setValue(bean);
+            if (rxCollection != null)
+            {
+                rxCollection.addBean(bean);
+            }
 
-            horizontalLayout.addComponentsAndExpand(beanField);
-
-            Button removeButton = new Button("Remove");
-            removeButton.addClickListener(e -> removeHandler.accept());
-
-            layout.addComponent(horizontalLayout);
+            renderBean(bean);
         });
 
-        Button addButton = new Button("Add");
-        addButton.addClickListener(e -> addHandler.get());
+        collection.forEach(this::renderBean);
+
+        layout.addComponent(addButton);
+    }
+
+    protected void renderBean(T bean)
+    {
+        final HorizontalLayout rowLayout = new HorizontalLayout();
+        rowLayout.setSpacing(true);
+        rowLayout.setMargin(false);
+        rowLayout.setSizeUndefined();
+
+        rowLayout.addComponentsAndExpand(createBeanField(bean));
+
+        Button removeButton = new Button("Remove");
+        removeButton.addClickListener(e ->
+        {
+            removeHandler.accept(bean);
+
+            if (rxCollection != null)
+            {
+                rxCollection.removeBean(rxCollection.getRxBean(bean));
+            }
+
+            layout.removeComponent(rowLayout);
+        });
+
+        rowLayout.addComponent(removeButton);
+        rowLayout.setComponentAlignment(removeButton, Alignment.BOTTOM_CENTER);
+        layout.addComponent(rowLayout);
+    }
+
+    protected BeanField<T> createBeanField(T bean)
+    {
+        BeanField<T> beanField = new BeanField<>(beanClass, rendererSupplier);
+
+        if (rxCollection != null)
+        {
+            beanField.setRxBean(rxCollection.getRxBean(bean));
+        }
+
+        beanField.setValue(bean);
+
+        return beanField;
     }
 
     @Override
@@ -74,7 +121,6 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     @Override
     public Collection<T> getValue()
     {
-        //TODO; commit bean fields
         return collection;
     }
 
@@ -88,5 +134,10 @@ public class BeanCollectionField<T> extends CustomField<Collection<T>>
     {
         this.removeHandler = removeHandler;
         return this;
+    }
+
+    public void setRxCollection(RxCollection<T> rxCollection)
+    {
+        this.rxCollection = rxCollection;
     }
 }
